@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: authentication
+type: Opaque
+data:
+  # from: https://8gwifi.org/sshfunctions.jsp
+  # $ vi key.priv
+  # $ cat key.priv | base64 -w0
+  JWT_PRIVATE_KEY: LS0tLS1CRUdJTiBSU0EgUFJJVk...S1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myservice
+  labels:
+    run: myservice
+spec:
+  type: ClusterIP
+  selector:
+    run: myservice
+  ports:
+    - name: api
+      port: 5010
+      targetPort: 5010
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myservice
+  labels:
+    run: myservice
+spec:
+  restartPolicy: Never
+
+  volumes:
+  - name: secrets
+    secret:
+      defaultMode: 420
+      secretName: authentication
+  - name: shared-data
+    emptyDir: {}
+
+  containers:
+  - name: authserver
+    image: localhost:5001/authserver:v0.1
+    imagePullPolicy: Always
+    env:
+    - name: PORT
+      value: "5002"
+    - name: TOKEN_DIR
+      value: "/usr/share/myservice/tokens"
+    volumeMounts:
+    - mountPath: /etc/secrets
+      name: secrets
+      readOnly: true
+    - name: shared-data
+      mountPath: /usr/share/myservice/tokens
+
+  - name: myservice
+    image: localhost:5001/myservice:v0.8
+    imagePullPolicy: Always
+    env:
+    - name: PORT
+      value: "5010"
+    - name: PLANNER_HOST
+      value: "okera.demo.com"
+    - name: PLANNER_PORT
+      value: "12050"
+    - name: TOKEN_SERVICE_PORT
+      value: "5002"
+    - name: PYTHONUNBUFFERED
+      value: "1"
+    volumeMounts:
+    - name: shared-data
+      mountPath: /usr/share/myservice/tokens
