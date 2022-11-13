@@ -13,7 +13,8 @@ COPY ./src /app
 
 RUN apk add --no-cache \
     libstdc++ \
-    gcompat
+    gcompat \
+    curl
 
 EXPOSE ${PORT}
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # start a local kind cluster with a registry running in it
 bin/kind-with-registry.sh

@@ -4,25 +4,10 @@ metadata:
   name: authentication
 type: Opaque
 data:
-  # from: https://8gwifi.org/sshfunctions.jsp
+  # from, for example: https://8gwifi.org/sshfunctions.jsp
   # $ vi key.priv
-  # $ cat key.priv | base64 -w0
+  # $ cat key.priv | base64 -w0  
   JWT_PRIVATE_KEY: LS0tLS1CRUdJTiBSU0EgUFJJVk...S1FTkQgUlNBIFBSSVZBVEUgS0VZLS0tLS0K
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: myservice
-  labels:
-    run: myservice
-spec:
-  type: ClusterIP
-  selector:
-    run: myservice
-  ports:
-    - name: api
-      port: 5010
-      targetPort: 5010
 ---
 apiVersion: v1
 kind: Pod
@@ -58,7 +43,7 @@ spec:
       mountPath: /usr/share/myservice/tokens
 
   - name: myservice
-    image: localhost:5001/myservice:v0.8
+    image: localhost:5001/myservice:v0.1
     imagePullPolicy: Always
     env:
     - name: PORT
